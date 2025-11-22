@@ -6,15 +6,16 @@ This trading bot implements three mathematically-backed strategies with AI-drive
 
 ## 🎯 Features
 
-- **DeepSeek R1 14B AI Agent**: Local LLM inference via Ollama for autonomous trading decisions
-- **Alpaca Crypto Trading**: Real-time crypto trading with commission-free execution
-- **Three Proven Strategies**:
+- **🎨 Premium Real-Time Dashboard**: Beautiful web UI with live trading visualization
+- **🤖 DeepSeek R1 14B AI Agent**: Local LLM inference via Ollama for autonomous trading decisions
+- **💹 Alpaca Crypto Trading**: Real-time crypto trading with commission-free execution
+- **📊 Three Proven Strategies**:
   - 📈 **Intraday Momentum** (Sharpe 1.72, 16.69% annual returns)
   - 🔄 **Copula Mean Reversion** (Sharpe 3.77, 75.2% annual returns)
   - 🧠 **Multi-Level DQN** (Sharpe 2.74, 29.93% ROI)
-- **Regime Detection**: Automatically adapts strategy allocation to market conditions
-- **Risk Management**: Kelly Criterion, stop-losses, max drawdown controls
-- **24/7 Operation**: Autonomous trading with monitoring and logging
+- **🎯 Regime Detection**: Automatically adapts strategy allocation to market conditions
+- **🛡️ Risk Management**: Kelly Criterion, stop-losses, max drawdown controls
+- **⚡ 24/7 Operation**: Autonomous trading with monitoring and logging
 
 ## 📋 Prerequisites
 
@@ -83,12 +84,32 @@ python main.py
 You should see:
 ```
 🚀 Initializing Crypto Trading Bot...
+🎨 Dashboard running at http://0.0.0.0:8080
+🌐 Open in browser: http://localhost:8080
 ✅ Ollama connected. Model deepseek-r1:14b ready.
 ✅ Alpaca connected. Portfolio: $100000.00
 💵 Buying Power: $100000.00
 ✅ All systems initialized successfully
 🔄 Starting 24/7 trading loop...
 ```
+
+### 4. Open the Dashboard
+
+Open your browser and go to:
+```
+http://localhost:8080
+```
+
+You'll see a **premium real-time dashboard** featuring:
+- 💰 Live portfolio value and P&L
+- 📈 Interactive performance charts
+- 🤖 AI decision reasoning in real-time
+- 📊 Strategy signals and regime detection
+- 💼 Current positions with live P&L
+- 📝 Recent trades log
+- 🎯 Sharpe ratio and performance metrics
+
+The dashboard auto-updates in real-time via WebSocket!
 
 ## 📊 Strategy Overview
 

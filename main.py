@@ -15,6 +15,7 @@ from trading_agent import DeepSeekTradingAgent
 from alpaca_trader import AlpacaCryptoTrader
 from strategy_engine import StrategyEngine
 from monitoring import PerformanceMonitor
+from dashboard import dashboard
 
 # Configure logging
 logging.basicConfig(
@@ -43,6 +44,9 @@ class CryptoTradingBot:
         """Initialize all components"""
         logger.info("🚀 Initializing Crypto Trading Bot...")
 
+        # Start dashboard server
+        await dashboard.start()
+
         # Test Ollama connection
         await self.agent.test_connection()
 
@@ -68,6 +72,10 @@ class CryptoTradingBot:
                 account = await self.trader.get_account()
                 positions = await self.trader.get_positions()
 
+                # Update dashboard with account info
+                await dashboard.update_account(account)
+                await dashboard.update_positions(positions)
+
                 # Detect market regime
                 regime = await self.strategy_engine.detect_regime(market_data)
                 logger.info(f"📊 Current market regime: {regime}")
@@ -76,6 +84,9 @@ class CryptoTradingBot:
                 signals = await self.strategy_engine.generate_signals(
                     market_data, regime
                 )
+
+                # Update dashboard with signals
+                await dashboard.update_signals(signals)
 
                 # Get AI agent decision
                 decision = await self.agent.make_trading_decision(
@@ -88,6 +99,9 @@ class CryptoTradingBot:
 
                 logger.info(f"🤖 DeepSeek Decision: {decision}")
 
+                # Update dashboard with AI reasoning
+                await dashboard.add_ai_reasoning(decision)
+
                 # Execute trades based on decision
                 if decision['action'] != 'hold':
                     execution_result = await self.trader.execute_trade(decision)
@@ -96,8 +110,20 @@ class CryptoTradingBot:
                     # Update monitoring
                     await self.monitor.record_trade(execution_result)
 
+                    # Update dashboard with trade
+                    await dashboard.add_trade(execution_result)
+
                 # Log performance metrics
                 await self.monitor.log_metrics(account, positions)
+
+                # Calculate and update metrics on dashboard
+                sharpe = self.monitor.calculate_sharpe_ratio(30)
+                max_dd = self.monitor.calculate_max_drawdown()
+                await dashboard.update_metrics({
+                    'sharpe_ratio': sharpe,
+                    'max_drawdown': max_dd,
+                    'total_trades': len(self.monitor.trades)
+                })
 
                 # Sleep between iterations (adjust based on strategy frequency)
                 await asyncio.sleep(60)  # 1 minute for high-frequency

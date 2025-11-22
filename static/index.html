@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek AI Trading Terminal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e6f0;
+            overflow-x: hidden;
+        }
+
+        .dashboard {
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #8892b0;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0e6f0;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            grid-column: span 3;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 12px 0 8px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #8892b0;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .stat-change.positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* Chart Card */
+        .chart-card {
+            grid-column: span 8;
+        }
+
+        /* AI Reasoning */
+        .ai-card {
+            grid-column: span 4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .ai-reasoning-item {
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #667eea;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+
+        .ai-timestamp {
+            font-size: 11px;
+            color: #8892b0;
+            margin-bottom: 6px;
+        }
+
+        .ai-decision {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .ai-decision.buy { color: #10b981; }
+        .ai-decision.sell { color: #ef4444; }
+        .ai-decision.hold { color: #f59e0b; }
+
+        /* Positions Table */
+        .positions-card {
+            grid-column: span 6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: #8892b0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .positive-pl {
+            color: #10b981;
+        }
+
+        .negative-pl {
+            color: #ef4444;
+        }
+
+        /* Trades Log */
+        .trades-card {
+            grid-column: span 6;
+        }
+
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .trade-side {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .trade-side.buy {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .trade-side.sell {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* Signals */
+        .signals-card {
+            grid-column: span 4;
+        }
+
+        .signal-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .signal-strength {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .signal-strength-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>DeepSeek AI Trading Terminal</h1>
+                    <p>Autonomous Crypto Trading • Powered by DeepSeek R1 14B</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="status-text">ACTIVE</span>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid">
+            <!-- Portfolio Value -->
+            <div class="card stat-card">
+                <div class="stat-label">Portfolio Value</div>
+                <div class="stat-value" id="portfolio-value">$0.00</div>
+                <div class="stat-change positive" id="portfolio-change">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>0.00%</span>
+                </div>
+            </div>
+
+            <!-- Total P&L -->
+            <div class="card stat-card">
+                <div class="stat-label">Total P&L</div>
+                <div class="stat-value" id="total-pl">$0.00</div>
+                <div class="stat-change positive" id="pl-change">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>0.00%</span>
+                </div>
+            </div>
+
+            <!-- Sharpe Ratio -->
+            <div class="card stat-card">
+                <div class="stat-label">Sharpe Ratio (30D)</div>
+                <div class="stat-value" id="sharpe-ratio">0.00</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Risk-Adjusted</span>
+                </div>
+            </div>
+
+            <!-- Win Rate -->
+            <div class="card stat-card">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value" id="win-rate">0%</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-trophy"></i>
+                    <span id="total-trades">0 trades</span>
+                </div>
+            </div>
+
+            <!-- Portfolio Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3 class="card-title">Portfolio Performance</h3>
+                    <span style="color: #8892b0; font-size: 12px;">Last 24 Hours</span>
+                </div>
+                <canvas id="portfolioChart"></canvas>
+            </div>
+
+            <!-- AI Reasoning -->
+            <div class="card ai-card">
+                <div class="card-header">
+                    <h3 class="card-title">AI Reasoning</h3>
+                    <i class="fas fa-brain" style="color: #667eea;"></i>
+                </div>
+                <div id="ai-reasoning-list">
+                    <div class="ai-reasoning-item">
+                        <div class="ai-timestamp">Waiting for AI decisions...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Positions -->
+            <div class="card positions-card">
+                <div class="card-header">
+                    <h3 class="card-title">Current Positions</h3>
+                    <span id="num-positions" style="color: #8892b0; font-size: 12px;">0 positions</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Quantity</th>
+                            <th>Avg Price</th>
+                            <th>Current Price</th>
+                            <th>P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="positions-table">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #8892b0;">No positions</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="card trades-card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Trades</h3>
+                    <span style="color: #8892b0; font-size: 12px;">Last 10</span>
+                </div>
+                <div id="trades-list">
+                    <div style="text-align: center; color: #8892b0; padding: 20px;">
+                        No trades yet
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy Signals -->
+            <div class="card signals-card">
+                <div class="card-header">
+                    <h3 class="card-title">Strategy Signals</h3>
+                    <i class="fas fa-signal" style="color: #667eea;"></i>
+                </div>
+                <div id="signals-list">
+                    <div class="signal-item">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Momentum</span>
+                            <span id="momentum-signal" style="color: #8892b0;">-</span>
+                        </div>
+                        <div class="signal-strength">
+                            <div class="signal-strength-bar" id="momentum-strength" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="signal-item">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Mean Reversion</span>
+                            <span id="mr-signal" style="color: #8892b0;">-</span>
+                        </div>
+                        <div class="signal-strength">
+                            <div class="signal-strength-bar" id="mr-strength" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="signal-item">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Market Regime</span>
+                            <span id="regime" style="color: #667eea; font-weight: 600;">RANGING</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
