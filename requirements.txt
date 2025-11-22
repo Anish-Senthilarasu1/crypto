@@ -1,0 +1,19 @@
+# Core dependencies
+httpx>=0.25.0
+asyncio>=3.4.3
+python-dotenv>=1.0.0
+
+# Data processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.11.0
+statsmodels>=0.14.0
+
+# Alpaca SDK (optional, using direct API)
+# alpaca-py>=0.9.0
+
+# Ollama (using direct API)
+# No separate package needed - using httpx
+
+# Utilities
+aiofiles>=23.0.0
