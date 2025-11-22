@@ -6,10 +6,15 @@ Implements mathematically-backed strategies with AI-driven decision making
 
 import asyncio
 import logging
+import os
 from datetime import datetime
 from typing import Dict, Any
 import signal
 import sys
+
+# Create logs directory BEFORE logging configuration
+os.makedirs("logs", exist_ok=True)
+os.makedirs("static", exist_ok=True)
 
 from trading_agent import DeepSeekTradingAgent
 from alpaca_trader import AlpacaCryptoTrader
@@ -160,8 +165,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # Create logs directory
-    import os
-    os.makedirs("logs", exist_ok=True)
-
     asyncio.run(main())
